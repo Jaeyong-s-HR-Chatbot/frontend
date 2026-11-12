@@ -47,7 +47,7 @@ export function Login({ onLoggedIn }: { onLoggedIn: () => void }) {
         <form className="login-card" onSubmit={onSubmit}>
           <h2>로그인</h2>
           <label htmlFor="username">사번
-            <input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="E2023041" autoComplete="username" />
+            <input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e1584" autoComplete="username" />
           </label>
           <label htmlFor="password">비밀번호
             <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
@@ -59,12 +59,12 @@ export function Login({ onLoggedIn }: { onLoggedIn: () => void }) {
             <div className="demo">
               <p>예시 모드 · 테스트 계정으로 바로 들어가기</p>
               <button type="button" onClick={() => demo('employee')}>
-                <span className="av" style={{ background: 'var(--blue-soft)', color: 'var(--blue)' }}>김</span>
-                <span>임직원으로 보기<small>김누리 · 경영지원팀 6급</small></span>
+                <span className="av" style={{ background: 'var(--blue-soft)', color: 'var(--blue)' }}>이</span>
+                <span>임직원으로 보기<small>이서준 · 신호팀 4급</small></span>
               </button>
               <button type="button" onClick={() => demo('hr_admin')}>
-                <span className="av" style={{ background: 'var(--accent-soft)', color: 'var(--accent-ink)' }}>정</span>
-                <span>인사팀으로 보기<small>정인사 · 인사팀 관리자</small></span>
+                <span className="av" style={{ background: 'var(--accent-soft)', color: 'var(--accent-ink)' }}>김</span>
+                <span>인사팀으로 보기<small>김수아 · 인사팀 2급</small></span>
               </button>
             </div>
           )}
