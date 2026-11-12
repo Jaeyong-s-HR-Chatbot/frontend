@@ -2,9 +2,10 @@ import type { ChatResponse, Me, Role } from '../types';
 
 // 백엔드 없이 화면을 볼 때 쓰는 가짜 데이터
 
+// DB 저장소 data/meta/demo_personas.json 의 데모 계정과 같은 사람 (사번 E + 네 자리, 직급 1~5급)
 export const MOCK_USERS: Record<Role, Me> = {
-  employee: { employee_id: 'E2023041', name: '김누리', dept: '경영지원팀', grade: '6급', role: 'employee' },
-  hr_admin: { employee_id: 'H2019007', name: '정인사', dept: '인사팀', grade: '관리자', role: 'hr_admin' },
+  employee: { employee_id: 'E1584', name: '이서준', dept: '신호팀', grade: '4급', role: 'employee' }, // P1
+  hr_admin: { employee_id: 'E1307', name: '김수아', dept: '인사팀', grade: '2급', role: 'hr_admin' }, // P8
 };
 
 const QA: { keys: string[]; res: ChatResponse }[] = [
