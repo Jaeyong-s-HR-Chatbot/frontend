@@ -2,10 +2,33 @@ import type { ChatResponse, Me, Role } from '../types';
 
 // 백엔드 없이 화면을 볼 때 쓰는 가짜 데이터
 
-// DB 저장소 data/meta/demo_personas.json 의 데모 계정과 같은 사람 (사번 E + 네 자리, 직급 1~5급)
+// DB 저장소 data/meta/demo_personas.json 의 데모 계정 (사번 E + 네 자리, 직급 1~5급)
+// 역할은 DB generate.py 와 같은 규칙: 인사팀 소속이면 hr_admin, 나머지는 employee
+const PEOPLE: Omit<Me, 'role'>[] = [
+  { employee_id: 'E1584', name: '이서준', dept: '신호팀', grade: '4급' }, // P1
+  { employee_id: 'E1412', name: '박지현', dept: '고객서비스팀', grade: '3급' }, // P2
+  { employee_id: 'E1377', name: '최도윤', dept: '차량1사업소', grade: '3급' }, // P3
+  { employee_id: 'E1265', name: '정하은', dept: '재무팀', grade: '2급' }, // P4
+  { employee_id: 'E1367', name: '강민재', dept: 'IT팀', grade: '3급' }, // P5
+  { employee_id: 'E1016', name: '윤영호', dept: '운전계획팀', grade: '1급' }, // P6
+  { employee_id: 'E1764', name: '한소율', dept: '역무1센터', grade: '5급' }, // P7
+  { employee_id: 'E1307', name: '김수아', dept: '인사팀', grade: '2급' }, // P8
+  { employee_id: 'E1465', name: '임태윤', dept: '승무1사업소', grade: '4급' }, // P9
+  { employee_id: 'E1331', name: '서지호', dept: '전력팀', grade: '3급' }, // P10
+  { employee_id: 'E1003', name: '송정식', dept: '인사팀', grade: '1급' }, // 인사팀장
+];
+
+export const MOCK_ACCOUNTS: Record<string, Me> = Object.fromEntries(
+  PEOPLE.map((p) => [p.employee_id, { ...p, role: p.dept === '인사팀' ? 'hr_admin' : 'employee' } satisfies Me]),
+);
+
+/** DB generate.py 의 TEST_PASSWORD (가상 계정 전용) */
+export const MOCK_PASSWORD = 'Test1234!';
+
+/** 로그인 화면의 바로가기 버튼용 */
 export const MOCK_USERS: Record<Role, Me> = {
-  employee: { employee_id: 'E1584', name: '이서준', dept: '신호팀', grade: '4급', role: 'employee' }, // P1
-  hr_admin: { employee_id: 'E1307', name: '김수아', dept: '인사팀', grade: '2급', role: 'hr_admin' }, // P8
+  employee: MOCK_ACCOUNTS.E1584,
+  hr_admin: MOCK_ACCOUNTS.E1307,
 };
 
 const QA: { keys: string[]; res: ChatResponse }[] = [

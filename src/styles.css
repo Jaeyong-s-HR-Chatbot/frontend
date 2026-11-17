@@ -69,7 +69,7 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .card h2 svg { width: 16px; height: 16px; }
 .card h2 .more { margin-left: auto; font-weight: 500; font-size: 12px; color: var(--muted); }
 .span3 { grid-column: span 3; } .span4 { grid-column: span 4; } .span5 { grid-column: span 5; }
-.span7 { grid-column: span 7; } .span8 { grid-column: span 8; } .span12 { grid-column: span 12; }
+.span6 { grid-column: span 6; } .span7 { grid-column: span 7; } .span8 { grid-column: span 8; } .span12 { grid-column: span 12; }
 .kpi .label { color: var(--muted); font-size: 12.5px; }
 .kpi .val { font-family: var(--num); font-size: 30px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15; margin-top: 6px; font-variant-numeric: tabular-nums; }
 .kpi .val small { font-size: 14px; color: var(--faint); font-weight: 500; margin-left: 3px; }
@@ -167,6 +167,100 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .demo button small { display: block; color: var(--muted); font-size: 12px; }
 .error { color: var(--bad); font-size: 12.5px; margin: 0; }
 
+/* 인사팀 ERP 화면 */
+.search.input { cursor: text; }
+.search.input input { border: 0; background: transparent; color: var(--fg); font: inherit; outline: none; min-width: 0; flex: 1; }
+.search.input:focus-within { border-color: var(--blue); }
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.toolbar .right, .card h2 .right { margin-left: auto; }
+.chips { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 3px; flex-wrap: wrap; }
+.chips button { border: 0; background: transparent; color: var(--muted); border-radius: 7px; padding: 5px 11px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; }
+.chips button.on { background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); font-weight: 500; }
+.chips button span { font-family: var(--num); font-size: 11px; color: var(--faint); }
+.select { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.select select { height: 32px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 8px; padding: 0 8px; font: inherit; font-size: 13px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; border: 1px solid var(--fg); background: var(--fg); color: var(--surface); border-radius: 8px; padding: 0 13px; font-size: 12.5px; font-weight: 500; white-space: nowrap; }
+.btn svg { width: 15px; height: 15px; }
+.btn.ghost { background: var(--surface); color: var(--fg); border-color: var(--line); }
+.btn.ghost:hover { border-color: var(--blue); color: var(--blue); }
+.btn.sm { height: 28px; padding: 0 10px; font-size: 12px; }
+.btn:disabled { opacity: .45; cursor: default; }
+.card.flush { padding: 6px 10px; }
+.gap-top { margin-top: 16px; }
+.kpi.click { text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.kpi.click:hover { border-color: var(--blue); }
+.more.link { border: 0; background: transparent; padding: 0; cursor: pointer; }
+.more.link:hover { color: var(--blue); }
+.list .row .more.link { margin-left: auto; font-size: 12px; color: var(--muted); }
+.tbl.hover tbody tr { cursor: pointer; }
+.tbl.hover tbody tr:hover td { background: var(--surface-2); }
+.tbl tr.sel td { background: var(--blue-soft); }
+.tbl td.wrap { white-space: normal; min-width: 160px; }
+.tbl .r { text-align: right; }
+.tbl .empty, p.empty { text-align: center; color: var(--faint); padding: 28px 8px; }
+.who small, small.block { display: block; color: var(--muted); font-size: 11.5px; }
+.fw { font-weight: 500; }
+.mono { font-family: var(--num); font-variant-numeric: tabular-nums; }
+.tag { margin-left: 6px; font-size: 11px; color: var(--accent-ink); background: var(--accent-soft); border-radius: 5px; padding: 1px 6px; }
+.rowlink { border: 0; background: transparent; padding: 0; color: var(--fg); font: inherit; font-weight: 500; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.rowlink:hover { color: var(--blue); text-decoration-color: currentColor; }
+.muted { color: var(--muted); }
+.fine { margin: 10px 0 0; font-size: 11.5px; color: var(--faint); }
+code { font-family: var(--num); background: var(--surface-2); border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; color: var(--fg); }
+.track i.warn, .meter i.warn { background: var(--warn); }
+.meter { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.meter .track { width: 90px; height: 6px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
+.meter .track i { display: block; height: 100%; background: var(--blue); }
+.act.end { justify-content: flex-end; margin-top: 16px; }
+.act button.danger { background: var(--bad); border-color: var(--bad); color: #fff; }
+.act button:disabled { opacity: .45; cursor: default; }
+.kv { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px 12px; margin: 0; font-size: 13px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.split { display: flex; justify-content: space-between; font-size: 13px; }
+
+/* 결재 상세 */
+.detail { display: flex; flex-direction: column; gap: 14px; }
+.dhead { display: flex; align-items: flex-start; gap: 10px; justify-content: space-between; }
+.dhead small { color: var(--faint); font-size: 11.5px; }
+.dhead h3 { margin: 2px 0 0; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+.checkbox { display: flex; gap: 10px; border-radius: 10px; padding: 11px 13px; font-size: 13px; }
+.checkbox svg { width: 18px; height: 18px; flex: none; margin-top: 1px; }
+.checkbox small { display: block; font-size: 12.5px; opacity: .9; }
+.detail .cite { align-self: flex-start; }
+.reason { margin: 0; font-size: 13px; background: var(--bad-soft); color: var(--bad); border-radius: 10px; padding: 10px 12px; }
+
+/* 급여 단계 */
+.steps { list-style: none; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 0; }
+.steps li { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--faint); padding: 9px 10px; border-radius: 9px; background: var(--surface-2); }
+.steps li span { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-family: var(--num); font-size: 11.5px; border: 1px solid var(--line); background: var(--surface); flex: none; }
+.steps li.done { color: var(--ok); }
+.steps li.done span { background: var(--ok); color: #fff; border-color: var(--ok); }
+.steps li.now { color: var(--fg); font-weight: 500; background: var(--accent-soft); }
+.steps li.now span { background: var(--accent); color: var(--rail); border-color: var(--accent); }
+
+/* 임직원 상세 서랍 */
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); background: var(--surface); border-left: 1px solid var(--line); box-shadow: -12px 0 32px rgba(10, 20, 40, .14); z-index: 20; display: flex; flex-direction: column; overflow: auto; }
+.drawer header { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 1px solid var(--line); }
+.drawer header b { display: flex; align-items: center; gap: 8px; font-size: 16px; }
+.drawer header small { color: var(--muted); font-size: 12px; }
+.drawer section { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.drawer h4 { margin: 0; font-size: 12px; color: var(--faint); font-weight: 500; letter-spacing: .04em; }
+.drawer footer { margin-top: auto; padding: 16px 20px; display: flex; gap: 8px; flex-wrap: wrap; }
+.drawer .bar { margin-top: 0; }
+.grow { flex: 1; min-width: 0; }
+.av.lg { width: 44px; height: 44px; font-size: 16px; background: var(--blue-soft); color: var(--blue); }
+.x { border: 0; background: transparent; color: var(--muted); font-size: 22px; width: 32px; height: 32px; border-radius: 8px; line-height: 1; }
+.x:hover { background: var(--surface-2); color: var(--fg); }
+
+/* 반려 창, 알림 */
+.overlay { position: fixed; inset: 0; background: rgba(8, 14, 26, .45); display: grid; place-items: center; z-index: 30; padding: 16px; }
+.dialog { width: min(420px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+.dialog h3 { margin: 0; font-size: 16px; }
+.dialog p { margin: 4px 0 12px; color: var(--muted); font-size: 13px; }
+.dialog textarea { width: 100%; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); border-radius: 10px; padding: 10px 12px; font: inherit; resize: vertical; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--rail); color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 13px; z-index: 40; box-shadow: 0 8px 24px rgba(0, 0, 0, .2); max-width: calc(100% - 32px); }
+
 @media (max-width: 1180px) {
   .app { grid-template-columns: 72px minmax(0, 1fr) 330px; }
   .brand .brand-text, .navlabel, .nav a span, .nav a .count, .me .who-text, .rolebadge { display: none; }
@@ -177,11 +271,21 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
   .app { display: flex; flex-direction: column; height: auto; }
   .rail { flex-direction: row; align-items: center; padding: 12px 16px; }
   .brand .brand-text { display: block; }
-  .nav, .navlabel { display: none; }
+  .rail { flex-wrap: wrap; row-gap: 10px; }
+  .navlabel { display: none; }
+  .navwrap { order: 3; width: 100%; overflow-x: auto; }
+  .nav { flex-direction: row; gap: 4px; }
+  .nav a, .nav a span { display: flex; white-space: nowrap; }
+  .nav a { padding: 7px 10px; }
+  .nav a.on { box-shadow: inset 0 -2px 0 var(--accent); }
+  .nav a .count { display: inline-block; }
   .me { margin: 0 0 0 auto; flex-direction: row; padding: 4px; background: transparent; }
   .main { padding: 18px 16px 32px; overflow: visible; }
   .span3, .span4, .span5, .span7, .span8 { grid-column: span 12; }
   .search { display: none; }
+  .search.input { display: flex; width: 100%; margin-left: 0; }
+  .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .span6 { grid-column: span 12; }
   .dock { border-left: 0; border-top: 1px solid var(--line); height: 560px; }
   .login { grid-template-columns: 1fr; }
   .login-side { padding: 32px 20px; }
