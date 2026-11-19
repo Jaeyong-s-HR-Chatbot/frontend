@@ -1,14 +1,24 @@
-import type { ChatResponse, Me, Role } from '../types';
+import type { ChatResponse, DocBlock, DocRef, DocSegment, DocumentView, Me, Role, SecurityLevel } from '../types';
 
 // 백엔드 없이 화면을 볼 때 쓰는 가짜 데이터
 
 // DB 저장소 data/meta/demo_personas.json 의 데모 계정과 같은 사람 (사번 E + 네 자리, 직급 1~5급)
 export const MOCK_USERS: Record<Role, Me> = {
-  employee: { employee_id: 'E1584', name: '이서준', dept: '신호팀', grade: '4급', role: 'employee' }, // P1
-  hr_admin: { employee_id: 'E1307', name: '김수아', dept: '인사팀', grade: '2급', role: 'hr_admin' }, // P8
+  // clearance(보안등급)는 DB 데모 계정에 아직 없어서 화면 확인용으로 정한 값
+  employee: { employee_id: 'E1584', name: '이서준', dept: '신호팀', grade: '4급', role: 'employee', clearance: 1 }, // P1
+  hr_admin: { employee_id: 'E1307', name: '김수아', dept: '인사팀', grade: '2급', role: 'hr_admin', clearance: 4 }, // P8
 };
 
-const QA: { keys: string[]; res: ChatResponse }[] = [
+const QA: { keys: string[]; res: ChatResponse; docs?: string[] }[] = [
+  {
+    keys: ['승진'],
+    res: {
+      answer: '승진심사 기준은 「2027년 승진심사 운영지침」에 정리돼 있어요. L2 등급 문서라 세부 배점과 일정은 아래 문서 보기로 확인해 주세요.',
+      citations: [{ title: '인사규정 제31조' }],
+      refused: false,
+    },
+    docs: ['DOC-2026-118'],
+  },
   {
     keys: ['출장비', '1박', '광역시'],
     res: {
@@ -57,7 +67,124 @@ const REFUSE: ChatResponse = {
   refused: true,
 };
 
-export function mockChat(message: string): ChatResponse {
+/* ── 기밀문서 원본 (실제로는 서버에만 있어요) ── */
+
+// 문자열은 L1, [등급, 문자열]은 그 등급 이상만 볼 수 있는 부분
+type RawSeg = string | [SecurityLevel, string];
+type RawBlock = { type: 'p'; segs: RawSeg[] } | { type: 'table'; head: string[]; rows: RawSeg[][] };
+interface RawDoc extends Omit<DocumentView, 'view' | 'redacted_count' | 'sections'> {
+  sections: { heading: string; blocks: RawBlock[] }[];
+}
+
+const DOCS: Record<string, RawDoc> = {
+  'DOC-2026-118': {
+    doc_id: 'DOC-2026-118',
+    title: '2027년 승진심사 운영지침',
+    level: 2,
+    doc_no: '인사팀-2026-118',
+    owner_dept: '인사팀',
+    issued_at: '2026-11-03',
+    sections: [
+      {
+        heading: '1. 목적',
+        blocks: [{ type: 'p', segs: ['이 지침은 2027년 정기 승진심사를 공정하고 투명하게 운영하기 위해 심사 대상, 평가 항목, 절차를 정한다.'] }],
+      },
+      {
+        heading: '2. 심사 대상',
+        blocks: [
+          { type: 'p', segs: ['2026년 12월 31일 기준으로 현 직급 최저 소요연수를 채운 직원을 대상으로 한다. 다만 징계 처분 후 승진 제한 기간 중인 직원은 제외한다.'] },
+          { type: 'p', segs: ['직급별 최저 소요연수는 ', [2, '6급 3년, 5급 4년, 4급 5년'], '으로 한다.'] },
+        ],
+      },
+      {
+        heading: '3. 평가 항목 및 배점',
+        blocks: [
+          {
+            type: 'table',
+            head: ['항목', '배점', '비고'],
+            rows: [
+              ['근무성적평정', [2, '50점'], [2, '최근 3년 가중 평균 (5:3:2)']],
+              ['경력', [2, '20점'], [2, '현 직급 근속 1년당 4점, 최대 5년']],
+              ['교육훈련', [2, '15점'], [2, '필수교육 이수 시 10점 + 자격증 가점']],
+              ['가점', [2, '15점'], [2, '포상·현장근무·특수직무']],
+            ],
+          },
+        ],
+      },
+      {
+        heading: '4. 직급별 승진 예정 인원',
+        blocks: [
+          {
+            type: 'table',
+            head: ['직급', '예정 인원', '현원 대비'],
+            rows: [
+              ['4급 → 3급', [3, '6명'], [3, '4.1%']],
+              ['5급 → 4급', [3, '18명'], [3, '7.3%']],
+              ['6급 → 5급', [3, '31명'], [3, '9.8%']],
+            ],
+          },
+        ],
+      },
+      {
+        heading: '5. 심사위원회',
+        blocks: [
+          { type: 'p', segs: ['심사위원회는 위원장 1명과 위원 6명으로 구성하며, 외부위원을 2명 이상 포함한다.'] },
+          { type: 'p', segs: ['위원장: ', [4, '경영지원본부장 한상철'], ' / 외부위원: ', [4, '노무법인 정도 최윤아 노무사, ○○대학교 경영학과 서진우 교수']] },
+        ],
+      },
+      {
+        heading: '6. 일정',
+        blocks: [
+          { type: 'p', segs: ['심사 공고는 ', [2, '2026년 12월 8일'], ', 심사는 ', [2, '2027년 1월 12일~16일'], ', 결과 발표는 ', [2, '2027년 1월 23일'], '에 한다.'] },
+        ],
+      },
+    ],
+  },
+};
+
+// 서버가 하는 가공을 흉내 내요: 등급이 모자란 부분은 원문을 빼고 표시만 남겨요
+function redactSeg(seg: RawSeg, clearance: SecurityLevel, count: { n: number }): DocSegment {
+  if (typeof seg === 'string') return { text: seg };
+  const [level, text] = seg;
+  if (level <= clearance) return { text };
+  count.n += 1;
+  return { redacted: true, level };
+}
+
+function redactDoc(raw: RawDoc, clearance: SecurityLevel): DocumentView {
+  const count = { n: 0 };
+  const sections = raw.sections.map((s) => ({
+    heading: s.heading,
+    blocks: s.blocks.map((b): DocBlock =>
+      b.type === 'p'
+        ? { type: 'p', segments: b.segs.map((x) => redactSeg(x, clearance, count)) }
+        : { type: 'table', head: b.head, rows: b.rows.map((r) => r.map((x) => redactSeg(x, clearance, count))) },
+    ),
+  }));
+  return { ...raw, sections, view: count.n === 0 ? 'original' : 'redacted', redacted_count: count.n };
+}
+
+function maxLevel(raw: RawDoc): SecurityLevel {
+  let max: SecurityLevel = raw.level;
+  for (const s of raw.sections)
+    for (const b of s.blocks)
+      for (const seg of b.type === 'p' ? b.segs : b.rows.flat())
+        if (typeof seg !== 'string' && seg[0] > max) max = seg[0];
+  return max;
+}
+
+export function mockChat(message: string, me: Me): ChatResponse {
   const hit = QA.find((q) => q.keys.some((k) => message.includes(k)));
-  return hit ? hit.res : REFUSE;
+  if (!hit) return REFUSE;
+  const documents: DocRef[] = (hit.docs ?? []).map((id) => {
+    const raw = DOCS[id];
+    return { doc_id: id, title: raw.title, level: raw.level, view: me.clearance >= maxLevel(raw) ? 'original' : 'redacted' };
+  });
+  return { ...hit.res, documents };
+}
+
+export function mockDocument(docId: string, me: Me): DocumentView {
+  const raw = DOCS[docId];
+  if (!raw) throw new Error('문서를 찾을 수 없어요.');
+  return redactDoc(raw, me.clearance);
 }

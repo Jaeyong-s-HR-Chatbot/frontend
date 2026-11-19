@@ -1,5 +1,5 @@
-import type { ChatResponse, Me, Role } from '../types';
-import { MOCK_USERS, mockChat } from './mock';
+import type { ChatResponse, DocumentView, Me, Role } from '../types';
+import { MOCK_USERS, mockChat, mockDocument } from './mock';
 
 // .env 의 VITE_API_URL 이 비어 있거나 VITE_USE_MOCK=true 면 가짜 데이터로 동작해요.
 const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
@@ -52,12 +52,14 @@ export function mockLogin(role: Role) {
 /** GET /me → 로그인한 사람 정보와 역할 */
 export async function fetchMe(): Promise<Me | null> {
   if (!getToken()) return null;
-  if (USE_MOCK) {
-    let role: Role = 'employee';
-    try { role = (localStorage.getItem(MOCK_ROLE_KEY) as Role) || 'employee'; } catch { /* 무시 */ }
-    return MOCK_USERS[role];
-  }
+  if (USE_MOCK) return mockMe();
   return request<Me>('/me');
+}
+
+function mockMe(): Me {
+  let role: Role = 'employee';
+  try { role = (localStorage.getItem(MOCK_ROLE_KEY) as Role) || 'employee'; } catch { /* 무시 */ }
+  return MOCK_USERS[role];
 }
 
 export function logout() {
@@ -68,7 +70,19 @@ export function logout() {
 export async function sendChat(message: string): Promise<ChatResponse> {
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 700));
-    return mockChat(message);
+    return mockChat(message, mockMe());
   }
   return request<ChatResponse>('/chat', { method: 'POST', body: JSON.stringify({ message }) });
+}
+
+/**
+ * GET /documents/{doc_id} → 사용자 보안등급에 맞게 가공된 문서
+ * 등급 확인과 가공은 서버에서 해요. 원본을 볼 수 있는 등급이면 원본이 와요.
+ */
+export async function fetchDocument(docId: string): Promise<DocumentView> {
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 400));
+    return mockDocument(docId, mockMe());
+  }
+  return request<DocumentView>(`/documents/${encodeURIComponent(docId)}`);
 }
