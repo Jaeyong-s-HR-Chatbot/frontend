@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { sendChat, USE_MOCK } from '../api/client';
-import type { ChatMessage, Me } from '../types';
+import { LEVEL_LABEL, type ChatMessage, type Me } from '../types';
+import { DocViewer } from './DocViewer';
 import { Icon } from './Icon';
 
 const SUGGESTIONS: Record<Me['role'], string[]> = {
-  employee: ['광역시 1박 2일 출장비는?', '올해 연차 몇 개야?', '부모님 가족수당 받을 수 있어?', '결혼하면 경조금 얼마야?'],
-  hr_admin: ['가족돌봄휴가는 며칠이야?', '병가 진단서 기준은?', '출장비 숙박 상한은?'],
+  employee: ['승진심사 기준 알려줘', '광역시 1박 2일 출장비는?', '올해 연차 몇 개야?', '부모님 가족수당 받을 수 있어?', '결혼하면 경조금 얼마야?'],
+  hr_admin: ['승진심사 기준 알려줘', '가족돌봄휴가는 며칠이야?', '병가 진단서 기준은?', '출장비 숙박 상한은?'],
 };
 
 export function ChatPanel({ me }: { me: Me }) {
@@ -14,6 +15,7 @@ export function ChatPanel({ me }: { me: Me }) {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [openDoc, setOpenDoc] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(1);
 
@@ -29,7 +31,7 @@ export function ChatPanel({ me }: { me: Me }) {
     setLoading(true);
     try {
       const res = await sendChat(q);
-      setMessages((m) => [...m, { id: nextId.current++, from: 'bot', text: res.answer, citations: res.citations, refused: res.refused }]);
+      setMessages((m) => [...m, { id: nextId.current++, from: 'bot', text: res.answer, citations: res.citations, refused: res.refused, documents: res.documents }]);
     } catch (err) {
       const msg = err instanceof Error ? err.message : '알 수 없는 오류';
       setMessages((m) => [...m, { id: nextId.current++, from: 'bot', text: `답변을 가져오지 못했어요. ${msg}`, refused: true }]);
@@ -73,6 +75,20 @@ export function ChatPanel({ me }: { me: Me }) {
                     ))}
                   </div>
                 )}
+                {m.documents && m.documents.length > 0 && (
+                  <div className="docs">
+                    {m.documents.map((d) => (
+                      <div key={d.doc_id} className="docref">
+                        <span className={`dv-ico lv${d.level}`}><Icon name="lock" /></span>
+                        <div className="t">
+                          <b>{d.title}</b>
+                          <small><span className={`lv lv${d.level}`}>{LEVEL_LABEL[d.level]}</span>{d.view === 'original' ? '원본 열람 가능' : '등급에 맞춰 일부 가림'}</small>
+                        </div>
+                        <button type="button" onClick={() => setOpenDoc(d.doc_id)} aria-label={`${d.title} 문서 보기`}>문서 보기</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {m.refused && (
                   <div className="cites"><span className="cite refuse"><Icon name="alert" />근거 조문 없음 · 인사팀 확인 필요</span></div>
                 )}
@@ -96,6 +112,8 @@ export function ChatPanel({ me }: { me: Me }) {
         </div>
         <p className="fine">답변은 등록된 사내규정을 기준으로 해요. 개인 상황은 인사팀에 확인해 주세요.</p>
       </form>
+
+      {openDoc && <DocViewer docId={openDoc} me={me} onClose={() => setOpenDoc(null)} />}
     </section>
   );
 }
