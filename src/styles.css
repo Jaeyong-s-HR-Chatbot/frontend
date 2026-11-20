@@ -148,15 +148,11 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 
 /* 기밀문서 안내 카드 (답변 안) */
 .lv { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 5px; white-space: nowrap; }
-.lv.lv1 { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
-.lv.lv2 { background: var(--blue-soft); color: var(--blue); }
-.lv.lv3 { background: var(--warn-soft); color: var(--warn); }
-.lv.lv4 { background: var(--bad-soft); color: var(--bad); }
+.lv.sec { background: var(--bad-soft); color: var(--bad); }
+.lv.pub { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
 .dv-ico { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; flex: none; background: var(--surface-2); color: var(--muted); }
 .dv-ico svg { width: 16px; height: 16px; }
-.dv-ico.lv2 { background: var(--blue-soft); color: var(--blue); }
-.dv-ico.lv3 { background: var(--warn-soft); color: var(--warn); }
-.dv-ico.lv4 { background: var(--bad-soft); color: var(--bad); }
+.dv-ico.sec { background: var(--bad-soft); color: var(--bad); }
 .docs { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; white-space: normal; }
 .docref { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 8px 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 10px; }
 .docref .t b { display: block; font-size: 13px; font-weight: 600; line-height: 1.4; }
@@ -244,15 +240,19 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .fld input:disabled, .fld textarea:disabled { opacity: .6; }
 .fld .opt { color: var(--faint); font-size: 11.5px; margin-left: 4px; }
 .fld-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.hint { color: var(--faint); font-size: 11.5px; }
-.seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.seg label { position: relative; display: grid; place-items: center; height: 38px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--muted); font-family: var(--num); font-weight: 600; font-size: 13px; cursor: pointer; }
-.seg label:has(input:focus-visible) { outline: 2px solid var(--blue); outline-offset: 2px; }
-.seg input { position: absolute; opacity: 0; pointer-events: none; }
-.seg label.on.lv1 { background: var(--surface-2); color: var(--fg); border-color: var(--muted); }
-.seg label.on.lv2 { background: var(--blue-soft); color: var(--blue); border-color: var(--blue); }
-.seg label.on.lv3 { background: var(--warn-soft); color: var(--warn); border-color: var(--warn); }
-.seg label.on.lv4 { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
+.sw { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); cursor: pointer; }
+.sw.on { border-color: var(--bad); background: var(--bad-soft); }
+.sw-text { flex: 1; min-width: 0; }
+.sw-text b { display: block; font-size: 13.5px; font-weight: 600; }
+.sw-text small { color: var(--muted); font-size: 12px; }
+.sw input { position: absolute; opacity: 0; pointer-events: none; }
+.sw-track { position: relative; width: 42px; height: 24px; border-radius: 12px; background: var(--line); flex: none; transition: background .15s; }
+.sw-track i { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .2); transition: transform .15s; }
+.sw.on .sw-track { background: var(--bad); }
+.sw.on .sw-track i { transform: translateX(18px); }
+.sw:has(input:focus-visible) { outline: 2px solid var(--blue); outline-offset: 2px; }
+.sw:has(input:disabled) { opacity: .6; cursor: default; }
+@media (prefers-reduced-motion: reduce) { .sw-track, .sw-track i { transition: none; } }
 .up-foot { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--line); }
 .up-foot .fine { margin: 0 auto 0 0; }
 .up-progress { flex: 1; display: flex; align-items: center; gap: 10px; margin-right: 8px; }

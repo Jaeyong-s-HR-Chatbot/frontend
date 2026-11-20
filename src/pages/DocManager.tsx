@@ -4,7 +4,7 @@ import { DocViewer } from '../components/DocViewer';
 import { Icon } from '../components/Icon';
 import { UploadDialog } from '../components/UploadDialog';
 import { formatSize } from '../format';
-import { LEVEL_LABEL, type DocumentMeta, type Me, type SecurityLevel } from '../types';
+import type { DocumentMeta, Me } from '../types';
 
 const STATUS: Record<DocumentMeta['status'], { label: string; cls: string }> = {
   processing: { label: '분석 중', cls: 'warn' },
@@ -12,12 +12,18 @@ const STATUS: Record<DocumentMeta['status'], { label: string; cls: string }> = {
   failed: { label: '분석 실패', cls: 'bad' },
 };
 
+const FILTERS = [
+  { key: 'all', label: '전체' },
+  { key: 'sec', label: '보안' },
+  { key: 'pub', label: '일반' },
+] as const;
+
 const fmtDate = (iso: string) => iso.slice(0, 10).replace(/-/g, '.');
 
 export function DocManager({ me, notify }: { me: Me; notify: (msg: string) => void }) {
   const [docs, setDocs] = useState<DocumentMeta[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<SecurityLevel | 0>(0);
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('all');
   const [query, setQuery] = useState('');
   const [uploadOpen, setUploadOpen] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
@@ -42,11 +48,11 @@ export function DocManager({ me, notify }: { me: Me; notify: (msg: string) => vo
 
   const shown = useMemo(() => {
     const q = query.trim();
-    return (docs ?? []).filter((d) => (!filter || d.level === filter) && (!q || d.title.includes(q) || d.doc_no.includes(q) || d.owner_dept.includes(q)));
+    return (docs ?? []).filter((d) => (filter === 'all' || d.confidential === (filter === 'sec')) && (!q || d.title.includes(q) || d.doc_no.includes(q) || d.owner_dept.includes(q)));
   }, [docs, filter, query]);
 
   async function remove(d: DocumentMeta) {
-    if (!window.confirm(`「${d.title}」을 삭제할까요?\n챗봇 안내와 문서 보기에서 바로 빠져요.`)) return;
+    if (!window.confirm(`「${d.title}」을 삭제할까요?\n삭제하면 되돌릴 수 없어요.`)) return;
     try {
       await deleteDocument(d.doc_id);
       notify(`「${d.title}」을 삭제했어요.`);
@@ -63,22 +69,22 @@ export function DocManager({ me, notify }: { me: Me; notify: (msg: string) => vo
       <div className="top">
         <div>
           <h1>문서 관리</h1>
-          <p>챗봇이 안내하는 기밀문서를 등록하고 보안등급을 정해요</p>
+          <p>사내 문서를 올리고 보안 여부를 정해요</p>
         </div>
         <button type="button" className="top-btn" onClick={() => setUploadOpen(true)}><Icon name="upload" />문서 업로드</button>
       </div>
 
       <div className="grid">
         <div className="card span4 kpi"><div className="label">등록 문서</div><div className="val">{count((d) => d.status === 'ready')}<small>건</small></div><div className="sub">전체 {docs?.length ?? 0}건</div></div>
-        <div className="card span4 kpi"><div className="label">L3 이상</div><div className="val">{count((d) => d.level >= 3)}<small>건</small></div><div className="sub">대부분 직원에게 가려져 보여요</div></div>
-        <div className="card span4 kpi"><div className="label">분석 중</div><div className="val">{count((d) => d.status === 'processing')}<small>건</small></div><div className="sub">끝나면 챗봇이 안내하기 시작해요</div></div>
+        <div className="card span4 kpi"><div className="label">보안 문서</div><div className="val">{count((d) => d.confidential)}<small>건</small></div><div className="sub">직원 보안등급에 따라 일부가 가려져요</div></div>
+        <div className="card span4 kpi"><div className="label">분석 중</div><div className="val">{count((d) => d.status === 'processing')}<small>건</small></div><div className="sub">끝나면 등록됨으로 바뀌어요</div></div>
 
         <div className="card span12">
           <div className="dm-tools">
-            <div className="chips" role="group" aria-label="보안등급 필터">
-              {([0, 1, 2, 3, 4] as const).map((l) => (
-                <button key={l} type="button" className={filter === l ? 'on' : ''} aria-pressed={filter === l} onClick={() => setFilter(l)}>
-                  {l === 0 ? '전체' : LEVEL_LABEL[l]}
+            <div className="chips" role="group" aria-label="보안 여부 필터">
+              {FILTERS.map((f) => (
+                <button key={f.key} type="button" className={filter === f.key ? 'on' : ''} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>
+                  {f.label}
                 </button>
               ))}
             </div>
@@ -94,17 +100,17 @@ export function DocManager({ me, notify }: { me: Me; notify: (msg: string) => vo
           ) : (
             <div className="scroll">
               <table className="tbl dm-tbl">
-                <thead><tr><th>문서</th><th>등급</th><th>담당부서</th><th>시행일</th><th>등록</th><th>상태</th><th /></tr></thead>
+                <thead><tr><th>문서</th><th>보안</th><th>담당부서</th><th>시행일</th><th>등록</th><th>상태</th><th /></tr></thead>
                 <tbody>
                   {shown.map((d) => (
                     <tr key={d.doc_id}>
                       <td>
                         <div className="dm-doc">
-                          <span className={`dv-ico lv${d.level}`}><Icon name="lock" /></span>
+                          <span className={`dv-ico ${d.confidential ? 'sec' : ''}`}><Icon name={d.confidential ? 'lock' : 'file'} /></span>
                           <div className="t"><b>{d.title}</b><small>{d.doc_no} · {d.file_name} · {formatSize(d.file_size)}</small></div>
                         </div>
                       </td>
-                      <td><span className={`lv lv${d.level}`}>{LEVEL_LABEL[d.level]}</span></td>
+                      <td>{d.confidential ? <span className="lv sec">보안</span> : <span className="lv pub">일반</span>}</td>
                       <td>{d.owner_dept}</td>
                       <td className="num">{fmtDate(d.issued_at)}</td>
                       <td><span className="num">{fmtDate(d.uploaded_at)}</span><small className="by">{d.uploaded_by}</small></td>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { sendChat, USE_MOCK } from '../api/client';
-import { LEVEL_LABEL, type ChatMessage, type Me } from '../types';
+import type { ChatMessage, Me } from '../types';
 import { DocViewer } from './DocViewer';
 import { Icon } from './Icon';
 
@@ -79,10 +79,10 @@ export function ChatPanel({ me }: { me: Me }) {
                   <div className="docs">
                     {m.documents.map((d) => (
                       <div key={d.doc_id} className="docref">
-                        <span className={`dv-ico lv${d.level}`}><Icon name="lock" /></span>
+                        <span className={`dv-ico ${d.confidential ? 'sec' : ''}`}><Icon name={d.confidential ? 'lock' : 'file'} /></span>
                         <div className="t">
                           <b>{d.title}</b>
-                          <small><span className={`lv lv${d.level}`}>{LEVEL_LABEL[d.level]}</span>{d.view === 'original' ? '원본 열람 가능' : '등급에 맞춰 일부 가림'}</small>
+                          <small>{d.confidential && <span className="lv sec">보안</span>}{d.view === 'original' ? '원본 열람 가능' : '보안등급에 맞춰 일부 가림'}</small>
                         </div>
                         <button type="button" onClick={() => setOpenDoc(d.doc_id)} aria-label={`${d.title} 문서 보기`}>문서 보기</button>
                       </div>

@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState, type DragEvent, type FormEvent, type MouseEvent } from 'react';
 import { uploadDocument } from '../api/client';
 import { formatSize } from '../format';
-import { LEVEL_LABEL, type DocumentMeta, type SecurityLevel } from '../types';
+import type { DocumentMeta } from '../types';
 import { Icon } from './Icon';
 
 const ACCEPT = ['.pdf', '.docx', '.hwp', '.hwpx', '.txt'];
 const MAX_MB = 50;
-const LEVELS: SecurityLevel[] = [1, 2, 3, 4];
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -16,11 +15,10 @@ export function UploadDialog({ onClose, onUploaded }: { onClose: () => void; onU
   const [file, setFile] = useState<File | null>(null);
   const [drag, setDrag] = useState(false);
   const [title, setTitle] = useState('');
-  const [level, setLevel] = useState<SecurityLevel>(2);
+  const [confidential, setConfidential] = useState(true);
   const [docNo, setDocNo] = useState('');
   const [dept, setDept] = useState('인사팀');
   const [issuedAt, setIssuedAt] = useState(todayIso);
-  const [summary, setSummary] = useState('');
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const uploading = progress !== null;
@@ -57,7 +55,7 @@ export function UploadDialog({ onClose, onUploaded }: { onClose: () => void; onU
     setError(null);
     setProgress(0);
     try {
-      const doc = await uploadDocument(file, { title: title.trim(), level, doc_no: docNo.trim(), owner_dept: dept.trim(), issued_at: issuedAt, summary: summary.trim() }, setProgress);
+      const doc = await uploadDocument(file, { title: title.trim(), confidential, doc_no: docNo.trim(), owner_dept: dept.trim(), issued_at: issuedAt }, setProgress);
       onUploaded(doc);
       ref.current?.close();
     } catch (err) {
@@ -72,7 +70,7 @@ export function UploadDialog({ onClose, onUploaded }: { onClose: () => void; onU
       <form className="dv-panel" onSubmit={onSubmit} noValidate>
         <header className="dv-head">
           <span className="dv-ico"><Icon name="upload" /></span>
-          <div className="dv-title"><b id="upload-title">기밀문서 업로드</b><small>올린 문서는 분석이 끝나면 챗봇 안내와 문서 보기에 쓰여요</small></div>
+          <div className="dv-title"><b id="upload-title">문서 업로드</b></div>
           <button type="button" className="dv-close" onClick={close} aria-label="닫기" disabled={uploading}><Icon name="x" /></button>
         </header>
 
@@ -103,18 +101,14 @@ export function UploadDialog({ onClose, onUploaded }: { onClose: () => void; onU
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="2027년 승진심사 운영지침" disabled={uploading} />
           </label>
 
-          <fieldset className="fld" disabled={uploading}>
-            <legend>보안등급</legend>
-            <div className="seg">
-              {LEVELS.map((l) => (
-                <label key={l} className={`lv${l} ${level === l ? 'on' : ''}`}>
-                  <input type="radio" name="level" checked={level === l} onChange={() => setLevel(l)} />
-                  {LEVEL_LABEL[l]}
-                </label>
-              ))}
-            </div>
-            <small className="hint">{LEVEL_LABEL[level]} 미만 직원에게는 가려진 문서로 보이고, {LEVEL_LABEL[level]} 이상은 원본을 봐요.</small>
-          </fieldset>
+          <label className={`sw ${confidential ? 'on' : ''}`}>
+            <span className="sw-text">
+              <b>보안 문서</b>
+              <small>{confidential ? '직원 보안등급에 따라 일부 내용이 가려져 보여요' : '모든 직원이 원본 그대로 봐요'}</small>
+            </span>
+            <input type="checkbox" role="switch" checked={confidential} onChange={(e) => setConfidential(e.target.checked)} disabled={uploading} />
+            <span className="sw-track" aria-hidden="true"><i /></span>
+          </label>
 
           <div className="fld-row">
             <label className="fld">담당부서
@@ -127,10 +121,6 @@ export function UploadDialog({ onClose, onUploaded }: { onClose: () => void; onU
 
           <label className="fld">문서번호 <span className="opt">선택</span>
             <input value={docNo} onChange={(e) => setDocNo(e.target.value)} placeholder="비워두면 자동으로 매겨요" disabled={uploading} />
-          </label>
-
-          <label className="fld">챗봇 안내 내용 <span className="opt">선택</span>
-            <textarea value={summary} onChange={(e) => setSummary(e.target.value)} rows={3} placeholder="어떤 질문에 이 문서를 안내할지 적어 주세요. 예: 승진 심사 대상, 평가 배점, 심사 일정" disabled={uploading} />
           </label>
 
           {error && <p className="error" role="alert">{error}</p>}
