@@ -81,3 +81,108 @@ export interface DocumentView {
   redacted_count: number;
   sections: DocSection[];
 }
+
+/** 문서 관리 목록 한 줄 (GET /documents) */
+export interface DocumentMeta {
+  doc_id: string;
+  title: string;
+  level: SecurityLevel;
+  doc_no: string;
+  owner_dept: string;
+  issued_at: string;
+  file_name: string;
+  /** 바이트 */
+  file_size: number;
+  uploaded_at: string;
+  uploaded_by: string;
+  /** 업로드 후 서버가 파일을 분석(문단 나누기·검색 색인)하는 동안 processing */
+  status: 'processing' | 'ready' | 'failed';
+}
+
+/** POST /documents (multipart) 에 파일과 함께 보내는 값 */
+export interface UploadInput {
+  title: string;
+  level: SecurityLevel;
+  doc_no: string;
+  owner_dept: string;
+  issued_at: string;
+  /** 챗봇이 어떤 질문에 이 문서를 안내할지 */
+  summary: string;
+}
+
+// ---------------------------------------------------------------- 인사팀(ERP) 목업용
+
+export type EmpStatus = '재직' | '휴직' | '퇴직' | string;
+
+/** 임직원 관리 화면 한 줄 (DB employees + leave_balance + payroll 일부) */
+export interface EmployeeRow {
+  id: string;
+  name: string;
+  gender: string;
+  dept: string;
+  hq: string;
+  site: string;
+  job: string;
+  position: string;
+  grade: number;
+  duty: string;
+  pattern: string;
+  status: EmpStatus;
+  hire: string;
+  email: string;
+  base: number;
+  leave: { granted: number | null; used: number | null; remaining: number | null } | null;
+  pay: { gross: number; net: number; overtime: number; deductions: number } | null;
+}
+
+export interface PayrollByHq {
+  hq: string;
+  people: number;
+  gross: number;
+  net: number;
+  overtime: number;
+}
+
+export interface Regulation {
+  id: string;
+  name: string;
+  tier: string;
+  category: string;
+  effective: string;
+  chunks: number;
+  searchable: number;
+  file: string;
+}
+
+/** DB requests.request_type 과 같은 값 */
+export type RequestType = '휴가신청' | '출장신청' | '경조금신청' | '출산축하금신청' | '휴직신청' | '복직신청';
+export type ApprovalStatus = '대기' | '승인' | '반려';
+
+export interface Approval {
+  id: string;
+  empId: string;
+  name: string;
+  dept: string;
+  type: RequestType;
+  title: string;
+  period: string;
+  amount?: number;
+  createdAt: string;
+  /** 결재할 때 확인할 규정 */
+  rule: string;
+  /** 규정과 비교해 본 자동 점검 결과 */
+  check: { ok: boolean; text: string };
+  status: ApprovalStatus;
+  decidedAt?: string;
+  reason?: string;
+}
+
+export interface ChatLog {
+  id: number;
+  at: string;
+  dept: string;
+  category: string;
+  question: string;
+  refused: boolean;
+  citations: string[];
+}

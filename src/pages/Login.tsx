@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { login, mockLogin, USE_MOCK } from '../api/client';
+import { MOCK_PASSWORD } from '../api/mock';
 import { TrainMark } from '../components/Icon';
 import type { Role } from '../types';
 
@@ -57,7 +58,7 @@ export function Login({ onLoggedIn }: { onLoggedIn: () => void }) {
 
           {USE_MOCK && (
             <div className="demo">
-              <p>예시 모드 · 테스트 계정으로 바로 들어가기</p>
+              <p>예시 모드 · 사번(예: e1584, 인사팀 e1307)과 비밀번호 <code>{MOCK_PASSWORD}</code>로 들어가요. 인사팀 소속 사번이면 인사팀 ERP 화면이 열려요.</p>
               <button type="button" onClick={() => demo('employee')}>
                 <span className="av" style={{ background: 'var(--blue-soft)', color: 'var(--blue)' }}>이</span>
                 <span>임직원으로 보기<small>이서준 · 신호팀 4급</small></span>
