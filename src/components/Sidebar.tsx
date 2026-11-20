@@ -1,11 +1,14 @@
 import type { Me } from '../types';
 import { Icon, TrainMark, type IconName } from './Icon';
 
-type NavItem = { icon: IconName; label: string; count?: number };
+/** 화면이 있는 메뉴만 page 를 가져요. 나머지는 아직 목업이라 눌러도 그대로예요 */
+export type Page = 'home' | 'docs';
+
+type NavItem = { icon: IconName; label: string; count?: number; page?: Page };
 
 const NAV: Record<Me['role'], NavItem[]> = {
   employee: [
-    { icon: 'home', label: '대시보드' },
+    { icon: 'home', label: '대시보드', page: 'home' },
     { icon: 'cal', label: '근태·연차' },
     { icon: 'coin', label: '급여·수당' },
     { icon: 'train', label: '출장', count: 1 },
@@ -13,15 +16,16 @@ const NAV: Record<Me['role'], NavItem[]> = {
     { icon: 'heart', label: '복리후생' },
   ],
   hr_admin: [
-    { icon: 'home', label: '대시보드' },
+    { icon: 'home', label: '대시보드', page: 'home' },
     { icon: 'users', label: '임직원 관리' },
     { icon: 'check', label: '결재 관리', count: 14 },
     { icon: 'file', label: '규정 관리' },
+    { icon: 'lock', label: '문서 관리', page: 'docs' },
     { icon: 'log', label: '챗봇 로그' },
   ],
 };
 
-export function Sidebar({ me, onLogout }: { me: Me; onLogout: () => void }) {
+export function Sidebar({ me, page, onNavigate, onLogout }: { me: Me; page: Page; onNavigate: (p: Page) => void; onLogout: () => void }) {
   return (
     <aside className="rail">
       <div className="brand">
@@ -32,9 +36,14 @@ export function Sidebar({ me, onLogout }: { me: Me; onLogout: () => void }) {
       <div>
         <div className="navlabel">메뉴</div>
         <nav className="nav">
-          {NAV[me.role].map((item, i) => (
-            // 목업이라 메뉴는 대시보드만 동작해요
-            <a key={item.label} href="#" className={i === 0 ? 'on' : ''} aria-current={i === 0 ? 'page' : undefined} onClick={(e) => e.preventDefault()}>
+          {NAV[me.role].map((item) => (
+            <a
+              key={item.label}
+              href="#"
+              className={item.page === page ? 'on' : ''}
+              aria-current={item.page === page ? 'page' : undefined}
+              onClick={(e) => { e.preventDefault(); if (item.page) onNavigate(item.page); }}
+            >
               <Icon name={item.icon} />
               <span>{item.label}</span>
               {item.count ? <span className="count">{item.count}</span> : null}

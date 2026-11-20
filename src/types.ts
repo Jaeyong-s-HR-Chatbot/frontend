@@ -81,3 +81,31 @@ export interface DocumentView {
   redacted_count: number;
   sections: DocSection[];
 }
+
+/** 문서 관리 목록 한 줄 (GET /documents) */
+export interface DocumentMeta {
+  doc_id: string;
+  title: string;
+  level: SecurityLevel;
+  doc_no: string;
+  owner_dept: string;
+  issued_at: string;
+  file_name: string;
+  /** 바이트 */
+  file_size: number;
+  uploaded_at: string;
+  uploaded_by: string;
+  /** 업로드 후 서버가 파일을 분석(문단 나누기·검색 색인)하는 동안 processing */
+  status: 'processing' | 'ready' | 'failed';
+}
+
+/** POST /documents (multipart) 에 파일과 함께 보내는 값 */
+export interface UploadInput {
+  title: string;
+  level: SecurityLevel;
+  doc_no: string;
+  owner_dept: string;
+  issued_at: string;
+  /** 챗봇이 어떤 질문에 이 문서를 안내할지 */
+  summary: string;
+}

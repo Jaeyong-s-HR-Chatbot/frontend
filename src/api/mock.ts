@@ -1,4 +1,4 @@
-import type { ChatResponse, DocBlock, DocRef, DocSegment, DocumentView, Me, Role, SecurityLevel } from '../types';
+import type { ChatResponse, DocBlock, DocRef, DocSegment, DocumentMeta, DocumentView, Me, Role, SecurityLevel, UploadInput } from '../types';
 
 // 백엔드 없이 화면을 볼 때 쓰는 가짜 데이터
 
@@ -185,6 +185,49 @@ export function mockChat(message: string, me: Me): ChatResponse {
 
 export function mockDocument(docId: string, me: Me): DocumentView {
   const raw = DOCS[docId];
-  if (!raw) throw new Error('문서를 찾을 수 없어요.');
-  return redactDoc(raw, me.clearance);
+  if (raw) return redactDoc(raw, me.clearance);
+  const meta = DOC_LIST.find((d) => d.doc_id === docId);
+  if (!meta) throw new Error('문서를 찾을 수 없어요.');
+  // 예시 모드에선 업로드한 파일 본문이 없어서 안내 문구만 보여줘요
+  const { title, level, doc_no, owner_dept, issued_at, file_name } = meta;
+  return {
+    doc_id: docId, title, level, doc_no, owner_dept, issued_at, view: 'original', redacted_count: 0,
+    sections: [{ heading: '본문', blocks: [{ type: 'p', segments: [{ text: `예시 모드라 본문이 없어요. 실제로는 서버가 「${file_name}」을 분석해서 문단·표 단위로 보내요.` }] }] }],
+  };
+}
+
+/* ── 문서 관리 (인사팀) ── */
+
+const DOC_LIST: DocumentMeta[] = [
+  { doc_id: 'DOC-2026-118', title: '2027년 승진심사 운영지침', level: 2, doc_no: '인사팀-2026-118', owner_dept: '인사팀', issued_at: '2026-11-03', file_name: '2027_승진심사_운영지침.hwpx', file_size: 184_320, uploaded_at: '2026-11-03T10:12:00', uploaded_by: '김수아', status: 'ready' },
+  { doc_id: 'DOC-2026-097', title: '2026년 임금협약 체결안', level: 3, doc_no: '노사협력팀-2026-097', owner_dept: '노사협력팀', issued_at: '2026-09-22', file_name: '2026_임금협약_체결안.pdf', file_size: 1_248_000, uploaded_at: '2026-09-22T15:40:00', uploaded_by: '김수아', status: 'ready' },
+  { doc_id: 'DOC-2026-071', title: '징계양정 세부기준', level: 3, doc_no: '감사실-2026-071', owner_dept: '감사실', issued_at: '2026-07-01', file_name: '징계양정_세부기준.docx', file_size: 96_256, uploaded_at: '2026-07-02T09:05:00', uploaded_by: '정민호', status: 'ready' },
+  { doc_id: 'DOC-2026-044', title: '교대근무 인력 운영계획(안)', level: 2, doc_no: '운영기획팀-2026-044', owner_dept: '운영기획팀', issued_at: '2026-04-15', file_name: '교대근무_인력운영계획.pdf', file_size: 512_000, uploaded_at: '2026-04-16T11:30:00', uploaded_by: '정민호', status: 'ready' },
+  { doc_id: 'DOC-2026-012', title: '임원 보수 산정 기준', level: 4, doc_no: '경영지원팀-2026-012', owner_dept: '경영지원팀', issued_at: '2026-01-10', file_name: '임원_보수_산정기준.pdf', file_size: 302_080, uploaded_at: '2026-01-12T14:20:00', uploaded_by: '김수아', status: 'ready' },
+];
+
+export function mockListDocuments(): DocumentMeta[] {
+  return DOC_LIST.map((d) => ({ ...d }));
+}
+
+export function mockUploadDocument(file: File, input: UploadInput, me: Me): DocumentMeta {
+  const doc: DocumentMeta = {
+    ...input,
+    doc_id: `DOC-2026-${String(200 + DOC_LIST.length).padStart(3, '0')}`,
+    doc_no: input.doc_no || `${input.owner_dept}-2026-${200 + DOC_LIST.length}`,
+    file_name: file.name,
+    file_size: file.size,
+    uploaded_at: new Date().toISOString(),
+    uploaded_by: me.name,
+    status: 'processing',
+  };
+  DOC_LIST.unshift(doc);
+  // 서버가 분석을 끝낸 것처럼 몇 초 뒤 등록 완료로 바꿔요
+  setTimeout(() => { doc.status = 'ready'; }, 4000);
+  return { ...doc };
+}
+
+export function mockDeleteDocument(docId: string) {
+  const i = DOC_LIST.findIndex((d) => d.doc_id === docId);
+  if (i >= 0) DOC_LIST.splice(i, 1);
 }

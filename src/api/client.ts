@@ -1,5 +1,5 @@
-import type { ChatResponse, DocumentView, Me, Role } from '../types';
-import { MOCK_USERS, mockChat, mockDocument } from './mock';
+import type { ChatResponse, DocumentMeta, DocumentView, Me, Role, UploadInput } from '../types';
+import { MOCK_USERS, mockChat, mockDeleteDocument, mockDocument, mockListDocuments, mockUploadDocument } from './mock';
 
 // .env 의 VITE_API_URL 이 비어 있거나 VITE_USE_MOCK=true 면 가짜 데이터로 동작해요.
 const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
@@ -30,6 +30,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     throw new Error('로그인이 만료됐어요. 다시 로그인해 주세요.');
   }
   if (!res.ok) throw new Error(`서버 응답 오류 (${res.status})`);
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
 
@@ -85,4 +86,52 @@ export async function fetchDocument(docId: string): Promise<DocumentView> {
     return mockDocument(docId, mockMe());
   }
   return request<DocumentView>(`/documents/${encodeURIComponent(docId)}`);
+}
+
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** GET /documents → 기밀문서 목록 (인사팀) */
+export async function listDocuments(): Promise<DocumentMeta[]> {
+  if (USE_MOCK) {
+    await wait(250);
+    return mockListDocuments();
+  }
+  return request<DocumentMeta[]>('/documents');
+}
+
+/**
+ * POST /documents (multipart/form-data: file + UploadInput 각 항목) → 등록된 문서
+ * 진행률을 보여주려고 fetch 대신 XHR 을 써요.
+ */
+export async function uploadDocument(file: File, input: UploadInput, onProgress?: (pct: number) => void): Promise<DocumentMeta> {
+  if (USE_MOCK) {
+    for (let p = 0; p <= 100; p += 10) { onProgress?.(p); await wait(90); }
+    return mockUploadDocument(file, input, mockMe());
+  }
+  const form = new FormData();
+  form.append('file', file);
+  for (const [k, v] of Object.entries(input)) form.append(k, String(v));
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_URL}/documents`);
+    const token = getToken();
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable) onProgress?.(Math.round((e.loaded / e.total) * 100)); };
+    xhr.onload = () => {
+      if (xhr.status === 401) { setToken(null); reject(new Error('로그인이 만료됐어요. 다시 로그인해 주세요.')); }
+      else if (xhr.status >= 200 && xhr.status < 300) resolve(JSON.parse(xhr.responseText) as DocumentMeta);
+      else reject(new Error(`서버 응답 오류 (${xhr.status})`));
+    };
+    xhr.onerror = () => reject(new Error('네트워크 오류로 올리지 못했어요.'));
+    xhr.send(form);
+  });
+}
+
+/** DELETE /documents/{doc_id} */
+export async function deleteDocument(docId: string): Promise<void> {
+  if (USE_MOCK) {
+    await wait(200);
+    return mockDeleteDocument(docId);
+  }
+  await request<void>(`/documents/${encodeURIComponent(docId)}`, { method: 'DELETE' });
 }
