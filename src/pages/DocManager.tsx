@@ -14,14 +14,13 @@ const STATUS: Record<DocumentMeta['status'], { label: string; cls: string }> = {
 
 const fmtDate = (iso: string) => iso.slice(0, 10).replace(/-/g, '.');
 
-export function DocManager({ me }: { me: Me }) {
+export function DocManager({ me, notify }: { me: Me; notify: (msg: string) => void }) {
   const [docs, setDocs] = useState<DocumentMeta[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<SecurityLevel | 0>(0);
   const [query, setQuery] = useState('');
   const [uploadOpen, setUploadOpen] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -41,12 +40,6 @@ export function DocManager({ me }: { me: Me }) {
     return () => clearTimeout(t);
   }, [docs, load]);
 
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 3500);
-    return () => clearTimeout(t);
-  }, [toast]);
-
   const shown = useMemo(() => {
     const q = query.trim();
     return (docs ?? []).filter((d) => (!filter || d.level === filter) && (!q || d.title.includes(q) || d.doc_no.includes(q) || d.owner_dept.includes(q)));
@@ -56,10 +49,10 @@ export function DocManager({ me }: { me: Me }) {
     if (!window.confirm(`「${d.title}」을 삭제할까요?\n챗봇 안내와 문서 보기에서 바로 빠져요.`)) return;
     try {
       await deleteDocument(d.doc_id);
-      setToast(`「${d.title}」을 삭제했어요.`);
+      notify(`「${d.title}」을 삭제했어요.`);
       load();
     } catch (e) {
-      setToast(`삭제하지 못했어요. ${e instanceof Error ? e.message : ''}`);
+      notify(`삭제하지 못했어요. ${e instanceof Error ? e.message : ''}`);
     }
   }
 
@@ -134,11 +127,10 @@ export function DocManager({ me }: { me: Me }) {
       {uploadOpen && (
         <UploadDialog
           onClose={() => setUploadOpen(false)}
-          onUploaded={(doc) => { setToast(`「${doc.title}」을 올렸어요. 분석이 끝나면 등록돼요.`); load(); }}
+          onUploaded={(doc) => { notify(`「${doc.title}」을 올렸어요. 분석이 끝나면 등록돼요.`); load(); }}
         />
       )}
       {preview && <DocViewer docId={preview} me={me} onClose={() => setPreview(null)} />}
-      {toast && <div className="toast" role="status">{toast}</div>}
     </>
   );
 }
