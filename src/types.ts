@@ -28,8 +28,8 @@ export interface Citation {
 export interface DocRef {
   doc_id: string;
   title: string;
-  /** 문서 전체의 보안등급 */
-  level: SecurityLevel;
+  /** 보안 문서인지 (켜져 있으면 부분별로 등급에 따라 가려져요) */
+  confidential: boolean;
   /** 이 사용자가 보게 될 형태: 등급이 충분하면 원본, 아니면 가공본 */
   view: 'original' | 'redacted';
 }
@@ -72,7 +72,7 @@ export interface DocSection {
 export interface DocumentView {
   doc_id: string;
   title: string;
-  level: SecurityLevel;
+  confidential: boolean;
   doc_no: string;
   owner_dept: string;
   issued_at: string;
@@ -86,7 +86,8 @@ export interface DocumentView {
 export interface DocumentMeta {
   doc_id: string;
   title: string;
-  level: SecurityLevel;
+  /** 보안 ON/OFF. 문서 전체 등급은 따로 없고, 가릴 부분의 등급은 서버가 정해요 */
+  confidential: boolean;
   doc_no: string;
   owner_dept: string;
   issued_at: string;
@@ -102,12 +103,10 @@ export interface DocumentMeta {
 /** POST /documents (multipart) 에 파일과 함께 보내는 값 */
 export interface UploadInput {
   title: string;
-  level: SecurityLevel;
+  confidential: boolean;
   doc_no: string;
   owner_dept: string;
   issued_at: string;
-  /** 챗봇이 어떤 질문에 이 문서를 안내할지 */
-  summary: string;
 }
 
 // ---------------------------------------------------------------- 인사팀(ERP) 목업용

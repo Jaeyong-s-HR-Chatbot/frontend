@@ -49,18 +49,16 @@ export function DocViewer({ docId, me, onClose }: { docId: string; me: Me; onClo
   // 바깥 어두운 영역을 누르면 닫혀요
   const onBackdrop = (e: MouseEvent<HTMLDialogElement>) => { if (e.target === e.currentTarget) close(); };
 
-  const level = doc ? LEVEL_LABEL[doc.level] : null;
-
   return (
     <dialog ref={ref} className="docview" onClose={onClose} onClick={onBackdrop} aria-labelledby="docview-title">
       <div className="dv-panel" onContextMenu={(e) => e.preventDefault()}>
         <header className="dv-head">
-          <span className={`dv-ico lv${doc?.level ?? 1}`}><Icon name="lock" /></span>
+          <span className={`dv-ico ${doc?.confidential ? 'sec' : ''}`}><Icon name={doc && !doc.confidential ? 'file' : 'lock'} /></span>
           <div className="dv-title">
             <b id="docview-title">{doc?.title ?? '문서 불러오는 중'}</b>
             {doc && <small>{doc.doc_no} · {doc.owner_dept} · {doc.issued_at}</small>}
           </div>
-          {doc && <span className={`lv lv${doc.level}`}>{level}</span>}
+          {doc?.confidential && <span className="lv sec">보안</span>}
           <button type="button" className="dv-close" onClick={close} aria-label="닫기"><Icon name="x" /></button>
         </header>
 
@@ -79,7 +77,7 @@ export function DocViewer({ docId, me, onClose }: { docId: string; me: Me; onClo
             <p className="dv-state">보안등급을 확인하고 문서를 불러오는 중이에요…</p>
           ) : (
             <article className="paper">
-              <div className="classif">{level}</div>
+              {doc.confidential && <div className="classif">보안</div>}
               <h1>{doc.title}</h1>
               {doc.sections.map((s) => (
                 <section key={s.heading}>
@@ -100,7 +98,7 @@ export function DocViewer({ docId, me, onClose }: { docId: string; me: Me; onClo
                   )}
                 </section>
               ))}
-              <div className="classif">{level}</div>
+              {doc.confidential && <div className="classif">보안</div>}
               <div className="wm" style={{ backgroundImage: mark }} aria-hidden="true" />
             </article>
           )}
